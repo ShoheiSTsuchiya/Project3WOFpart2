@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.Scanner;
+import java.util.List;
 
 public class MasterMind extends Game {
     private static final int CODESIZE = 4;
@@ -17,6 +18,7 @@ public class MasterMind extends Game {
         System.out.println("Welcome to MasterMind!");
         System.out.println("Try to guess the 4 color code. Colors: R G B Y O P");
         Scanner scanner = new Scanner(System.in);
+        int score = 0;
 
         while (attempts < 10) {
             System.out.println("Attempt " + (attempts + 1) + "/10");
@@ -29,20 +31,24 @@ public class MasterMind extends Game {
             }
 
             attempts++;
-            int exacts = checkExacts(new StringBuilder(secret), new StringBuilder(guess));
-            int partials = checkPartials(new StringBuilder(secret), new StringBuilder(guess));
+            boolean[] exactsFound = new boolean[CODESIZE];
+            int exacts = checkExacts(new StringBuilder(secret), new StringBuilder(guess), exactsFound);
+            int partials = checkPartials(new StringBuilder(secret), new StringBuilder(guess), exactsFound);
+
+            score += (2 * exacts) + partials;  // Exactが1つ当たるごとに2点、Partialが1つ当たるごとに1点を加算
 
             System.out.println(exacts + " exact, " + partials + " partial");
 
             if (exacts == CODESIZE) {
                 System.out.println("Congratulations! You've guessed the secret code!");
-                return new GameRecord("Player", 10 - attempts + 1);
+                return new GameRecord("Player", score);
             }
         }
 
         System.out.println("Game Over! The secret code was: " + secret);
-        return new GameRecord("Player", 0);
+        return new GameRecord("Player", score);
     }
+
 
     @Override
     protected boolean playNext() {
@@ -66,26 +72,27 @@ public class MasterMind extends Game {
         return secretBuilder.toString();
     }
 
-    private int checkExacts(StringBuilder secretSB, StringBuilder guessSB) {
+
+    private int checkExacts(StringBuilder secretSB, StringBuilder guessSB, boolean[] exactsFound) {
         int exacts = 0;
         for (int i = 0; i < CODESIZE; i++) {
             if (secretSB.charAt(i) == guessSB.charAt(i)) {
                 exacts++;
-                secretSB.setCharAt(i, '-');
-                guessSB.setCharAt(i, '*');
+                exactsFound[i] = true;
             }
         }
         return exacts;
     }
-//need to fix that do not include "exact" one.
-    private int checkPartials(StringBuilder secretSB, StringBuilder guessSB) {
+
+    private int checkPartials(StringBuilder secretSB, StringBuilder guessSB, boolean[] exactsFound) {
         int partials = 0;
         for (int i = 0; i < CODESIZE; i++) {
+            if (exactsFound[i]) continue;
+
             for (int j = 0; j < CODESIZE; j++) {
-                if (secretSB.charAt(i) == guessSB.charAt(j)) {
+                if (i != j && secretSB.charAt(i) == guessSB.charAt(j)) {
                     partials++;
-                    secretSB.setCharAt(i, '-');
-                    guessSB.setCharAt(j, '*');
+                    break;
                 }
             }
         }
@@ -99,9 +106,16 @@ public class MasterMind extends Game {
         // output the result here
         System.out.println("Game Results:");
         System.out.println(allGamesRecord);
-        System.out.println("Average Score: " + allGamesRecord.average());
-        System.out.println("Top 2 Scores: " + allGamesRecord.highGameList(2));
 
+
+        double averageScore = allGamesRecord.average();
+        System.out.println("Average Score: " + averageScore);
+
+        List<GameRecord> topScores = allGamesRecord.highGameList(2);
+        System.out.println("Top 2 Scores:");
+        for (GameRecord record : topScores) {
+            System.out.println(record);
+        }
 
     }
 }
