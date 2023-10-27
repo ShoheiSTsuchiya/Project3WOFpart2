@@ -1,12 +1,10 @@
-
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
 
-public abstract class WheelOfFortune extends Game {
+public abstract class WheelOfFortune extends GuessingGame {
     protected String phrase;
     protected StringBuilder hiddenPhrase;
     protected List<String> phrases;
@@ -14,16 +12,17 @@ public abstract class WheelOfFortune extends Game {
 
     public WheelOfFortune(WheelOfFortunePlayer player) {
         this.player = player;
-
-        try {
-            this.phrases = Files.readAllLines(Paths.get("phrases.txt"));
-        } catch (IOException var3) {
-            var3.printStackTrace();
-            this.phrases = List.of("EXAMPLE PHRASE");
-        }
-
+        readPhrases();
     }
 
+    protected void readPhrases() {
+        try {
+            this.phrases = Files.readAllLines(Paths.get("phrases.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.phrases = List.of("EXAMPLE");
+        }
+    }
     protected void selectRandomPhrase() {
         this.phrase = this.randomPhrase(this.phrases);
         this.hiddenPhrase = this.createHiddenPhrase(this.phrase);
@@ -58,13 +57,13 @@ public abstract class WheelOfFortune extends Game {
 
     private StringBuilder createHiddenPhrase(String phrase) {
         StringBuilder hidden = new StringBuilder();
-        char[] var3 = phrase.toCharArray();
-        int var4 = var3.length;
+        char[] chars = phrase.toCharArray();
 
-        for(int var5 = 0; var5 < var4; ++var5) {
-            char c = var3[var5];
-            if (c == ' ') {
-                hidden.append(' ');
+        for (char c : chars) {
+            if (Character.isLetter(c)) {
+                hidden.append('*');
+            } else if (c == ' ' || c == '\'' || c == '’') {
+                hidden.append(c);
             } else {
                 hidden.append('*');
             }
@@ -86,9 +85,6 @@ public abstract class WheelOfFortune extends Game {
         return matchCount;
     }
 
-    protected void setPlayer(WheelOfFortunePlayer newPlayer) {
-        this.player = newPlayer;
-    }
 
     public String getHiddenPhrase() {
         return this.hiddenPhrase.toString();

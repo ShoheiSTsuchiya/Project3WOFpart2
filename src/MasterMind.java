@@ -2,65 +2,57 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.List;
 
-public class MasterMind extends Game {
+public class MasterMind extends GuessingGame {
     private static final int CODESIZE = 4;
     private static final String COLORS = "RGBYOP";
     private String secret;
-    private int attempts;
+    private Scanner scanner = new Scanner(System.in); //reuse scanner
 
     public MasterMind() {
         this.secret = generateSecret();
-        this.attempts = 0;
     }
 
     @Override
     protected GameRecord play() {
+        this.secret = generateSecret();
+        this.attempts = 0;
+        this.score = 0;
+
         System.out.println("Welcome to MasterMind!");
-        System.out.println("Try to guess the 4 color code. Colors: R G B Y O P");
-        Scanner scanner = new Scanner(System.in);
+        System.out.println("Please guess the 4 color code. Colors: R G B Y O P");
         int score = 0;
 
-        while (attempts < 10) {
+        while (!isGameOver(10)) {
             System.out.println("Attempt " + (attempts + 1) + "/10");
             System.out.print("Enter your guess: ");
             String guess = scanner.next().toUpperCase();
 
             if (guess.length() != CODESIZE) {
-                System.out.println("Invalid input! Enter exactly 4 colors.");
+                System.out.println("Invalid input. Enter exactly 4 colors.");
                 continue;
             }
 
-            attempts++;
+            incrementAttempts(); // use method from GuessingGame
             boolean[] exactsFound = new boolean[CODESIZE];
             int exacts = checkExacts(new StringBuilder(secret), new StringBuilder(guess), exactsFound);
             int partials = checkPartials(new StringBuilder(secret), new StringBuilder(guess), exactsFound);
 
-            score += (2 * exacts) + partials;  // Exactが1つ当たるごとに2点、Partialが1つ当たるごとに1点を加算
+            score += (2 * exacts) + partials;  // exacts: 2 points, partials: 1 point
 
             System.out.println(exacts + " exact, " + partials + " partial");
 
             if (exacts == CODESIZE) {
                 System.out.println("Congratulations! You've guessed the secret code!");
-                return new GameRecord("Player", score);
+                System.out.println("The secret code was: " + secret);
+                break;
             }
         }
 
-        System.out.println("Game Over! The secret code was: " + secret);
-        return new GameRecord("Player", score);
-    }
-
-
-    @Override
-    protected boolean playNext() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Do you want to play again? (yes/no): ");
-        String response = scanner.next().toLowerCase();
-        if ("yes".equals(response)) {
-            this.secret = generateSecret();
-            this.attempts = 0;
-            return true;
+        if (attempts == 10) {
+            System.out.println("Game Over! The secret code was: " + secret);
         }
-        return false;
+
+        return new GameRecord("Player", score);
     }
 
     private String generateSecret() {
@@ -72,13 +64,14 @@ public class MasterMind extends Game {
         return secretBuilder.toString();
     }
 
-
     private int checkExacts(StringBuilder secretSB, StringBuilder guessSB, boolean[] exactsFound) {
         int exacts = 0;
         for (int i = 0; i < CODESIZE; i++) {
             if (secretSB.charAt(i) == guessSB.charAt(i)) {
                 exacts++;
                 exactsFound[i] = true;
+                secretSB.setCharAt(i, '*');
+                guessSB.setCharAt(i, '*');
             }
         }
         return exacts;
@@ -90,8 +83,10 @@ public class MasterMind extends Game {
             if (exactsFound[i]) continue;
 
             for (int j = 0; j < CODESIZE; j++) {
-                if (i != j && secretSB.charAt(i) == guessSB.charAt(j)) {
+                if (!exactsFound[j] && secretSB.charAt(i) == guessSB.charAt(j)) {
                     partials++;
+                    secretSB.setCharAt(i, '*');
+                    guessSB.setCharAt(j, '*');
                     break;
                 }
             }
@@ -116,6 +111,5 @@ public class MasterMind extends Game {
         for (GameRecord record : topScores) {
             System.out.println(record);
         }
-
     }
 }

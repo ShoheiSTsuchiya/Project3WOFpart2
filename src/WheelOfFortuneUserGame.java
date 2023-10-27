@@ -67,7 +67,7 @@ public class WheelOfFortuneUserGame extends WheelOfFortune {
                 score += matchCount;
             } else {
                 wrongGuesses++;
-                System.out.println("Wrong guess! You have " + (MAX_WRONG_GUESSES - wrongGuesses) + " attempts left.");
+                System.out.println("Wrong guess. You have " + (MAX_WRONG_GUESSES - wrongGuesses) + " attempts left.");
             }
         }
 
@@ -86,15 +86,16 @@ public class WheelOfFortuneUserGame extends WheelOfFortune {
             System.out.println("All phrases have been used. Game Over!");
             return false;
         }
-        System.out.print("Do you want to play again? (yes/no): ");
-        String response = scanner.next().toLowerCase();
-        if ("yes".equals(response)) {
+        boolean next = super.playNext(); // Call playNext from GuessingGame
+        if (next == true) {
             player.reset();  // Reset player's state
             selectRandomPhrase();
-            return true;
-        } else {
-            return false;
         }
+        return next;
+    }
+
+    public String getHiddenPhrase() {
+        return hiddenPhrase.toString();
     }
 
     public static void main(String[] args) {
@@ -103,16 +104,13 @@ public class WheelOfFortuneUserGame extends WheelOfFortune {
             public char nextGuess() {
                 return 'a'; // This can be modified as needed
             }
-
             @Override
             public String playerId() {
                 return "User1";
             }
-
             @Override
-            public void reset() {
-                // Implement reset logic if necessary
-            }
+            public void reset(){}
+
         };
 
         WheelOfFortuneUserGame game = new WheelOfFortuneUserGame(player);
