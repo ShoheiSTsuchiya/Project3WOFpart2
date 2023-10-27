@@ -1,3 +1,8 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,74 +17,75 @@ public abstract class WheelOfFortune extends Game {
 
     public WheelOfFortune(WheelOfFortunePlayer player) {
         this.player = player;
+
         try {
             this.phrases = Files.readAllLines(Paths.get("phrases.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            // Handle the exception, for example, you might want to initialize phrases to an empty list
-            // or provide some default phrases, or propagate the exception up the stack
+        } catch (IOException var3) {
+            var3.printStackTrace();
             this.phrases = List.of("EXAMPLE PHRASE");
         }
-        selectRandomPhrase();
+
     }
 
     protected void selectRandomPhrase() {
-        phrase = randomPhrase(phrases);
-        hiddenPhrase = createHiddenPhrase(phrase);
+        this.phrase = this.randomPhrase(this.phrases);
+        this.hiddenPhrase = this.createHiddenPhrase(this.phrase);
     }
 
-    protected abstract char getGuess(String previousGuesses);
+    protected abstract char getGuess(String var1);
 
-    @Override
     public GameRecord play() {
-        //initialized score and previous guess values
         int score = 0;
         StringBuilder previousGuesses = new StringBuilder();
 
-        while (hiddenPhrase.toString().contains("*")) {
-            char guess = getGuess(previousGuesses.toString());
+        while(this.hiddenPhrase.toString().contains("*")) {
+            char guess = this.getGuess(previousGuesses.toString());
             previousGuesses.append(guess);
-
-            int matchCount = processGuess(guess);
+            int matchCount = this.processGuess(guess);
             if (matchCount > 0) {
-                score += matchCount; // Adjust scoring mechanism as needed
+                score += matchCount;
             }
         }
 
-        // Create a game record with the player's ID and final score
-        GameRecord gameRecord = new GameRecord(player.playerId(), score);
-
-        return gameRecord; // This line has been corrected
+        GameRecord gameRecord = new GameRecord(this.player.playerId(), score);
+        return gameRecord;
     }
 
     private String randomPhrase(List<String> phraseList) {
         Random rand = new Random();
         int index = rand.nextInt(phraseList.size());
-        String selectedPhrase = phraseList.get(index);
-        phraseList.remove(index); // Remove the selected phrase from the list
+        String selectedPhrase = (String)phraseList.get(index);
+        phraseList.remove(index);
         return selectedPhrase;
     }
 
     private StringBuilder createHiddenPhrase(String phrase) {
         StringBuilder hidden = new StringBuilder();
-        for (char c : phrase.toCharArray()) {
+        char[] var3 = phrase.toCharArray();
+        int var4 = var3.length;
+
+        for(int var5 = 0; var5 < var4; ++var5) {
+            char c = var3[var5];
             if (c == ' ') {
                 hidden.append(' ');
             } else {
                 hidden.append('*');
             }
         }
+
         return hidden;
     }
 
     protected int processGuess(char guess) {
         int matchCount = 0;
-        for (int i = 0; i < phrase.length(); i++) {
-            if (Character.toLowerCase(guess) == Character.toLowerCase(phrase.charAt(i))) {
-                hiddenPhrase.setCharAt(i, phrase.charAt(i));
-                matchCount++;
+
+        for(int i = 0; i < this.phrase.length(); ++i) {
+            if (Character.toLowerCase(guess) == Character.toLowerCase(this.phrase.charAt(i))) {
+                this.hiddenPhrase.setCharAt(i, this.phrase.charAt(i));
+                ++matchCount;
             }
         }
+
         return matchCount;
     }
 
@@ -88,11 +94,11 @@ public abstract class WheelOfFortune extends Game {
     }
 
     public String getHiddenPhrase() {
-        return hiddenPhrase.toString();
+        return this.hiddenPhrase.toString();
     }
 
     protected void setPhrase(String newPhrase) {
-        phrase = newPhrase;
-        hiddenPhrase = createHiddenPhrase(newPhrase);
+        this.phrase = newPhrase;
+        this.hiddenPhrase = this.createHiddenPhrase(newPhrase);
     }
 }

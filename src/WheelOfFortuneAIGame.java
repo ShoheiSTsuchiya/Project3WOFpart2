@@ -1,30 +1,34 @@
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class WheelOfFortuneAIGame extends WheelOfFortune {
 
     private List<WheelOfFortunePlayer> aiPlayers;
     private int currentPlayerIndex = 0;
-    private static  int MAX_WRONG_GUESSES = 10;  // Max wrong guesses allowed
+    private static final int MAX_WRONG_GUESSES = 10;  // Max wrong guesses allowed
+
+    public WheelOfFortuneAIGame() {
+        super(new SequentialAIPlayer()); // Pass the default player to the superclass constructor
+        this.aiPlayers = new ArrayList<>();
+        this.aiPlayers.add(new SequentialAIPlayer());
+    }
+
+    public WheelOfFortuneAIGame(WheelOfFortunePlayer player) {
+        super(player);
+        this.aiPlayers = new ArrayList<>();
+        this.aiPlayers.add(player);
+    }
 
     public WheelOfFortuneAIGame(List<WheelOfFortunePlayer> players) {
         super(players.get(0)); // Pass the first player to the superclass constructor
         this.aiPlayers = new ArrayList<>(players);
-    }//
+    }
+
     @Override
-
     protected char getGuess(String previousGuesses) {
-        // Get the index of the current player
-        int index = currentPlayerIndex;
-
-        // Retrieve the current player from the aiPlayers list
-        WheelOfFortunePlayer currentPlayer = aiPlayers.get(index);
-
-        // Ask the current player for their next guess
-        char nextGuess = currentPlayer.nextGuess();
-
-        // Return the next guess
-        return nextGuess;
+        WheelOfFortunePlayer currentPlayer = aiPlayers.get(currentPlayerIndex % aiPlayers.size());
+        return currentPlayer.nextGuess();
     }
 
     @Override
@@ -33,7 +37,10 @@ public class WheelOfFortuneAIGame extends WheelOfFortune {
         StringBuilder previousGuesses = new StringBuilder();
         int wrongGuesses = 0;
 
-        while (hiddenPhrase.toString().contains("*") && wrongGuesses < MAX_WRONG_GUESSES) {
+        WheelOfFortunePlayer currentPlayer = aiPlayers.get(currentPlayerIndex % aiPlayers.size());
+        currentPlayerIndex++;
+
+        while (getHiddenPhrase().contains("*") && wrongGuesses < MAX_WRONG_GUESSES) {
             char guess = getGuess(previousGuesses.toString());
             previousGuesses.append(guess);
 
@@ -48,30 +55,36 @@ public class WheelOfFortuneAIGame extends WheelOfFortune {
         if (wrongGuesses >= MAX_WRONG_GUESSES) {
             System.out.println("Game over! AI failed to guess the phrase.");
         } else {
-            System.out.println("Congratulations AI! The phrase was: " + phrase);
+            System.out.println("Congratulations AI! The phrase was: " + this.phrase);
         }
 
-        return new GameRecord(player.playerId(), score);
+        return new GameRecord(currentPlayer.playerId(), score);
+    }
+
+    public AllGamesRecord playAll() {
+        AllGamesRecord allGamesRecord = new AllGamesRecord();
+        currentPlayerIndex = 0;
+
+        while (!phrases.isEmpty()) {
+            selectRandomPhrase();
+            for (WheelOfFortunePlayer aiPlayer : aiPlayers) {
+                GameRecord gameRecord = play();
+                allGamesRecord.add(gameRecord);
+                aiPlayer.reset();
+            }
+
+        }
+
+        return allGamesRecord;
     }
 
     @Override
     protected boolean playNext() {
-        if (currentPlayerIndex < aiPlayers.size() - 1) {
-            currentPlayerIndex++;
-            setPlayer(aiPlayers.get(currentPlayerIndex));
-            resetGame();
-            return true;
-        }
-        return false;
-    }
-
-    private void resetGame() {
-        selectRandomPhrase();
-        player.reset();
+        return !phrases.isEmpty();
     }
 
     public static void main(String[] args) {
-        // Using the actual AI players instead of dummy implementations
+        // Assuming classes like SequentialAIPlayer, RandomAIPlayer, MostCommonAIPlayer exist
         WheelOfFortunePlayer player1 = new SequentialAIPlayer();
         WheelOfFortunePlayer player2 = new RandomAIPlayer();
         WheelOfFortunePlayer player3 = new MostCommonAIPlayer();
@@ -80,8 +93,11 @@ public class WheelOfFortuneAIGame extends WheelOfFortune {
         WheelOfFortuneAIGame game = new WheelOfFortuneAIGame(players);
         AllGamesRecord allGamesRecord = game.playAll();
 
-        System.out.println("Average score: " + allGamesRecord.average());
-        System.out.println("Top 3 scores: " + allGamesRecord.highGameList(3));
-        System.out.println("Average score for " + player1.playerId() + ": " + allGamesRecord.average(player1.playerId()));
+        System.out.println("All Results: " + allGamesRecord);
+        System.out.println("Average Score: " + allGamesRecord.average());
+        System.out.println("Top 2 Scores: " + allGamesRecord.highGameList(2));
+        for(WheelOfFortunePlayer player : players) {
+            System.out.println("Average Score for " + player.playerId() + ": " + String.format("%.3f", allGamesRecord.average(player.playerId())));
+        }
     }
 }

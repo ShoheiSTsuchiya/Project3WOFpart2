@@ -12,22 +12,13 @@ public class GameRecord implements Comparable<GameRecord> {
     }
 
     public int getScore() {
+
         return score;
     }
 
     @Override
     public int compareTo(GameRecord other) {
-        int thisScore = this.score;
-        int otherScore = other.score;
-
-        // Compare the scores
-        if (thisScore > otherScore) {
-            return 1;  // Return 1 if this score is greater than the other score
-        } else if (thisScore < otherScore) {
-            return -1; // Return -1 if this score is less than the other score
-        } else {
-            return 0;  // Return 0 if the scores are equal
-        }
+        return Integer.compare(other.score, this.score);  // Sort in descending order
     }
 
     @Override
