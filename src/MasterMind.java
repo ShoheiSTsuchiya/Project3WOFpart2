@@ -103,6 +103,7 @@ public class MasterMind extends GuessingGame {
         return true;
     }
 
+
     public static void main(String[] args) {
         MasterMind game = new MasterMind();
         AllGamesRecord allGamesRecord = game.playAll();
