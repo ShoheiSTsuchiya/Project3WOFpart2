@@ -27,7 +27,7 @@ public class MasterMind extends GuessingGame {
             System.out.print("Enter your guess: ");
             String guess = scanner.next().toUpperCase();
 
-            if (guess.length() != CODESIZE) {
+            if (guess.length() != CODESIZE|| !isValidGuess(guess)) {
                 System.out.println("Invalid input. Enter exactly 4 colors.");
                 continue;
             }
@@ -92,6 +92,15 @@ public class MasterMind extends GuessingGame {
             }
         }
         return partials;
+    }
+
+    private boolean isValidGuess(String guess) {
+        for (char c : guess.toCharArray()) {
+            if (COLORS.indexOf(c) == -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static void main(String[] args) {
